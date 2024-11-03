@@ -1,38 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поддержите нас через Telegram Wallet</title>
-    <script src="https://telegram-web-apps.js"></script>
+    <title>Поддержите нас через TON Connect</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest/dist/tonconnect.min.js"></script>
 </head>
 <body>
-    <h1>Поддержите наш проект</h1>
-    
-    <!-- Кнопка для доната звёздами -->
-    <button onclick="donateStars()">Задонатить звёзды через @wallet</button>
-
-    <!-- Кнопка для доната USDT -->
-    <button onclick="donateUSDT()">Задонатить USDT через @wallet</button>
+    <h1>Поддержите наш проект через TON Connect</h1>
+    <button id="donateButton">Задонатить 1 TON</button>
 
     <script>
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.ready();
+        // Инициализация TON Connect
+        const tonConnect = new TonConnect();
 
-        // Функция для отправки доната в звёздах через @wallet
-        function donateStars() {
-            // Открывает @wallet для перевода звёзд
-            const walletURL = `https://t.me/wallet?start=donate_stars`;
-            tg.openLink(walletURL);
-        }
+        document.getElementById("donateButton").onclick = async () => {
+            try {
+                // Подключение к кошельку
+                await tonConnect.connectWallet();
 
-        // Функция для отправки доната в USDT через @wallet
-        function donateUSDT() {
-            // Открывает @wallet для перевода USDT
-            const walletURL = `https://t.me/wallet?start=donate_usdt`;
-            tg.openLink(walletURL);
-        }
+                // Адрес получателя и сумма
+                const recipientAddress = "EQC...";  // Замените на ваш адрес
+                const amount = 1 * 10**9;  // 1 TON в нанотонах
+
+                // Запрос транзакции
+                await tonConnect.sendTransaction({
+                    to: recipientAddress,
+                    value: amount,
+                    stateInit: null,
+                    message: "Поддержка проекта"
+                });
+
+                alert("Запрос на транзакцию отправлен в ваш кошелёк.");
+            } catch (error) {
+                console.error("Ошибка при отправке транзакции:", error);
+                alert("Ошибка при подключении к кошельку.");
+            }
+        };
     </script>
 </body>
 </html>

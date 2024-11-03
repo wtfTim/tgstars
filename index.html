@@ -22,19 +22,15 @@
 
         // Функция для отправки доната в звёздах через @wallet
         function donateStars() {
-            // Открывает @wallet с параметрами для отправки звёзд
-            const username = tg.initDataUnsafe.user.username; // Получаем имя пользователя Telegram
-            const starsAmount = 100; // Укажите количество звёзд, которое хотите задать для доната
-            const walletURL = `https://t.me/wallet?start=donate_stars_${starsAmount}_${username}`;
+            // Открывает @wallet для перевода звёзд
+            const walletURL = `https://t.me/wallet?start=donate_stars`;
             tg.openLink(walletURL);
         }
 
         // Функция для отправки доната в USDT через @wallet
         function donateUSDT() {
-            // Открывает @wallet с параметрами для отправки USDT
-            const username = tg.initDataUnsafe.user.username; // Получаем имя пользователя Telegram
-            const usdtAmount = 1; // Укажите количество USDT, которое хотите задать для доната
-            const walletURL = `https://t.me/wallet?start=donate_usdt_${usdtAmount}_${username}`;
+            // Открывает @wallet для перевода USDT
+            const walletURL = `https://t.me/wallet?start=donate_usdt`;
             tg.openLink(walletURL);
         }
     </script>

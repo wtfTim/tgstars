@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поддержите нас через Telegram Wallet</title>
+    <script src="https://telegram-web-apps.js"></script>
+</head>
+<body>
+    <h1>Поддержите наш проект</h1>
+    
+    <!-- Кнопка для доната звёздами -->
+    <button onclick="donateStars()">Задонатить звёзды через @wallet</button>
+
+    <!-- Кнопка для доната USDT -->
+    <button onclick="donateUSDT()">Задонатить USDT через @wallet</button>
+
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Функция для отправки доната в звёздах через @wallet
+        function donateStars() {
+            // Открывает @wallet с параметрами для отправки звёзд
+            const username = tg.initDataUnsafe.user.username; // Получаем имя пользователя Telegram
+            const starsAmount = 100; // Укажите количество звёзд, которое хотите задать для доната
+            const walletURL = `https://t.me/wallet?start=donate_stars_${starsAmount}_${username}`;
+            tg.openLink(walletURL);
+        }
+
+        // Функция для отправки доната в USDT через @wallet
+        function donateUSDT() {
+            // Открывает @wallet с параметрами для отправки USDT
+            const username = tg.initDataUnsafe.user.username; // Получаем имя пользователя Telegram
+            const usdtAmount = 1; // Укажите количество USDT, которое хотите задать для доната
+            const walletURL = `https://t.me/wallet?start=donate_usdt_${usdtAmount}_${username}`;
+            tg.openLink(walletURL);
+        }
+    </script>
+</body>
+</html>

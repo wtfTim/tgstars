@@ -3,40 +3,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поддержите нас через TON Connect</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest/dist/tonconnect.min.js"></script>
+    <title>Открытие Кейсов</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1f26; /* Темно-синий фон */
+            color: #ffffff; /* Белый текст */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2d313a; /* Немного светлее фон для контента */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #ffd700; /* Золотой цвет для заголовков */
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .info {
+             background-color: #3a3f4d; /* Цвет фона для информационных блоков */
+             padding: 15px;
+             border-radius: 10px;
+             margin-bottom: 20px;
+        }
+        .info p {
+            margin: 5px 0;
+        }
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .case-item {
+            background-color: #444957;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            position: relative; /* Для размещения цены */
+        }
+         .case-item:hover {
+             transform: scale(1.05);
+             background-color: #555a69;
+         }
+        .case-emoji {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .case-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .case-cost {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff6b6b; /* Красный для цены */
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .case-win {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+        .hidden {
+            display: none;
+        }
+        button {
+            background-color: #4CAF50; /* Зеленая кнопка */
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #resultModal {
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8); /* Полупрозрачный черный фон */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #2d313a;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+        }
+        #loadingSpinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .notification {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .notification.success { background-color: #4CAF50; color: white; }
+        .notification.error { background-color: #f44336; color: white; }
+        .notification.info { background-color: #2196F3; color: white; }
+
+    </style>
 </head>
 <body>
-    <h1>Поддержите наш проект через TON Connect</h1>
-    <button id="donateButton">Задонатить 1 TON</button>
+    <div class="container">
+        <h1>🔮 Кейсы Удачи</h1>
+        <div id="userInfo" class="info">
+            <p><strong>Пользователь:</strong> <span id="displayUsername">Загрузка...</span></p>
+            <p><strong>Звёзд:</strong> <span id="displayStars">Загрузка...</span> ⭐</p>
+            <p><small>ID: <span id="displayUserId">-</span></small></p>
+        </div>
+
+        <div id="notifications"></div> <!-- Блок для уведомлений -->
+
+        <div id="casesSection">
+            <h2>Выберите кейс:</h2>
+            <div id="caseGrid" class="case-grid">
+                <!-- Кейсы будут загружены сюда динамически -->
+            </div>
+        </div>
+
+        <div id="resultModal" class="hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                 <div id="modalBody">
+                     <div id="loadingSpinner"></div>
+                     <p>Открываем кейс...</p>
+                 </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Инициализация TON Connect
-        const tonConnect = new TonConnect();
+        // Инициализация Telegram Web App SDK
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Расширяем WebApp на весь доступный размер
+        tg.MainButton.hide(); // Скрываем основную кнопку Telegram по умолчанию
 
-        document.getElementById("donateButton").onclick = async () => {
-            try {
-                // Подключение к кошельку
-                await tonConnect.connectWallet();
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        const username = urlParams.get('username');
+        const stars = parseFloat(urlParams.get('stars'));
 
-                // Адрес получателя и сумма
-                const recipientAddress = "EQC...";  // Замените на ваш адрес
-                const amount = 1 * 10**9;  // 1 TON в нанотонах
+        // Отображаем информацию о пользователе
+        document.getElementById('displayUserId').textContent = userId || 'Неизвестно';
+        document.getElementById('displayUsername').textContent = username || 'Неизвестно';
+        document.getElementById('displayStars').textContent = isNaN(stars) ? '0.00' : stars.toFixed(2);
 
-                // Запрос транзакции
-                await tonConnect.sendTransaction({
-                    to: recipientAddress,
-                    value: amount,
-                    stateInit: null,
-                    message: "Поддержка проекта"
-                });
+        // Проверка наличия необходимых данных
+        if (!userId || !username) {
+             showNotification('Ошибка: Не удалось получить данные пользователя из Telegram.', 'error');
+             // Можно закрыть WebApp или показать сообщение об ошибке
+             // tg.close();
+        } else {
+            console.log(`Пользователь: ${username}, ID: ${userId}, Звёзд: ${stars}`);
+            loadCases(); // Загружаем кейсы после получения данных
+        }
 
-                alert("Запрос на транзакцию отправлен в ваш кошелёк.");
-            } catch (error) {
-                console.error("Ошибка при отправке транзакции:", error);
-                alert("Ошибка при подключении к кошельку.");
+        // Определение кейсов (можно загружать динамически с сервера)
+        const CASES = [
+            {
+                id: 1,
+                name: "Бронзовый Кейс",
+                emoji: "🥉",
+                cost: 10,
+                min_win: 1,
+                max_win: 30,
+                description: "Начальный кейс для новичков"
+            },
+            {
+                id: 2,
+                name: "Серебряный Кейс",
+                emoji: "🥈",
+                cost: 50,
+                min_win: 5,
+                max_win: 100,
+                description: "Средний кейс с хорошими шансами"
+            },
+            {
+                id: 3,
+                name: "Золотой Кейс",
+                emoji: "🥇",
+                cost: 100,
+                min_win: 10,
+                max_win: 300,
+                description: "Премиум кейс с большими выигрышами"
+            },
+            {
+                id: 4,
+                name: "Платиновый Кейс",
+                emoji: "💎",
+                cost: 500,
+                min_win: 50,
+                max_win: 1000,
+                description: "Элитный кейс для опытных игроков"
+            },
+            {
+                id: 5,
+                name: "Кейс Подарков",
+                emoji: "🎀",
+                cost: 35,
+                // Для кейса подарков выигрыш - ID подарка
+                description: "Специальный кейс с подарками"
             }
-        };
+        ];
+
+        // Функция для загрузки и отображения кейсов
+        function loadCases() {
+            const gridContainer = document.getElementById('caseGrid');
+            gridContainer.innerHTML = ''; // Очищаем перед перерисовкой
+
+            CASES.forEach(caseItem => {
+                const caseElement = document.createElement('div');
+                caseElement.className = 'case-item';
+                caseElement.dataset.caseId = caseItem.id;
+
+                // Определяем, может ли пользователь открыть этот кейс
+                const canAfford = stars >= caseItem.cost;
+
+                caseElement.innerHTML = `
+                    <span class="case-cost">${caseItem.cost} ⭐</span>
+                    <span class="case-emoji">${caseItem.emoji}</span>
+                    <div class="case-name">${caseItem.name}</div>
+                    ${
+                        caseItem.id === 5 ?
+                        '<div class="case-win">🎁 Случайный подарок</div>' :
+                        `<div class="case-win">💰 ${caseItem.min_win} - ${caseItem.max_win} звёзд</div>`
+                    }
+                `;
+
+                if (canAfford) {
+                    caseElement.addEventListener('click', () => openCase(caseItem));
+                } else {
+                    caseElement.style.opacity = '0.5'; // Визуально затеняем недоступные
+                    caseElement.title = `Недостаточно звёзд. Нужно ${caseItem.cost}`;
+                }
+
+                gridContainer.appendChild(caseElement);
+            });
+        }
+
+        // Функция для открытия кейса
+        async function openCase(caseItem) {
+            console.log(`Попытка открыть кейс: ${caseItem.name}`);
+
+            // Показываем модальное окно с анимацией
+            const modal = document.getElementById('resultModal');
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div id="loadingSpinner"></div>
+                <p>🔍 Анализируем содержимое кейса "${caseItem.emoji} ${caseItem.name}"...</p>
+            `;
+            modal.classList.remove('hidden');
+
+            // Закрываем модальное окно при клике на крестик
+            document.querySelector('.close').onclick = function() {
+                modal.classList.add('hidden');
+            }
+            // Закрываем модальное окно при клике вне его
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.classList.add('hidden');
+                }
+            }
+
+            try {
+                // --- 1. Отправляем запрос в наш бэкенд для списания звёзд ---
+                // В реальной реализации здесь будет fetch к вашему API
+                // Например: const response = await fetch('/api/open_case', { ... });
+
+                // --- Имитация работы бэкенда ---
+                // В реальном приложении эта логика будет на сервере (Python/Flask/Django/etc.)
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Имитация задержки
+
+                // Проверка баланса (дублируем на клиенте для UX, но проверка на сервере обязательна)
+                if (window.currentStarsForSim < caseItem.cost) {
+                     throw new Error("Недостаточно звёзд (симуляция).");
+                }
+                window.currentStarsForSim -= caseItem.cost; // Списываем звёзды (симуляция)
+
+                // Рассчитываем выигрыш (симуляция)
+                let winResult;
+                if (caseItem.id === 5) {
+                    // Симуляция получения случайного подарка
+                    const gifts = [
+                        {id: 1, emoji: "🧸", name: "Мишка", value: 15},
+                        {id: 2, emoji: "💝", name: "Сердце", value: 15},
+                        {id: 3, emoji: "🎁", name: "Подарок", value: 25},
+                        {id: 4, emoji: "🌹", name: "Роза", value: 25},
+                        // ... другие подарки
+                    ];
+                    winResult = gifts[Math.floor(Math.random() * gifts.length)];
+                } else {
+                    // Симуляция получения случайного количества звёзд
+                    const range = caseItem.max_win - caseItem.min_win;
+                    // Упрощённая логика: чаще маленькие выигрыши
+                    const rand = Math.random();
+                    let winAmount;
+                    if (rand < 0.6) {
+                        winAmount = caseItem.min_win + Math.random() * range * 0.3; // 60% - низкий выигрыш
+                    } else if (rand < 0.9) {
+                        winAmount = caseItem.min_win + range * 0.3 + Math.random() * range * 0.5; // 30% - средний
+                    } else {
+                        winAmount = caseItem.min_win + range * 0.8 + Math.random() * range * 0.2; // 10% - высокий
+                    }
+                    winResult = Math.max(caseItem.min_win, Math.floor(winAmount));
+                }
+
+                // --- 2. Обновляем интерфейс с результатом ---
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки перед результатом
+
+                let resultHTML = `<h2>${caseItem.emoji} Кейс открыт!</h2>`;
+                if (caseItem.id === 5 && winResult.emoji) {
+                    resultHTML += `
+                        <p>🎊 Вы выиграли:</p>
+                        <p style="font-size: 3em;">${winResult.emoji}</p>
+                        <p><strong>${winResult.name}</strong> (${winResult.value} ⭐)</p>
+                        <p>🎁 Подарок добавлен в ваш инвентарь бота!</p>
+                    `;
+                     showNotification(`Вы выиграли ${winResult.emoji} ${winResult.name}!`, 'success');
+                } else if(typeof winResult === 'number') {
+                    resultHTML += `
+                        <p>🎊 Вы выиграли:</p>
+                        <p style="font-size: 2em;">⭐ ${winResult} звёзд</p>
+                    `;
+                    showNotification(`Вы выиграли ${winResult} звёзд!`, 'success');
+                    // Обновляем отображение звёзд
+                    window.currentStarsForSim += winResult;
+                    document.getElementById('displayStars').textContent = window.currentStarsForSim.toFixed(2);
+                } else {
+                     resultHTML += `<p>❓ Неизвестный результат.</p>`;
+                }
+                resultHTML += `<button onclick="document.getElementById('resultModal').classList.add('hidden');">OK</button>`;
+                modalBody.innerHTML = resultHTML;
+
+
+                // --- 3. Отправляем данные в бота (опционально, через Telegram Web App API) ---
+                // Например, можно отправить уведомление боту о выигрыше
+                // tg.sendData(JSON.stringify({action: "case_opened", case_id: caseItem.id, result: winResult}));
+
+            } catch (error) {
+                console.error("Ошибка при открытии кейса:", error);
+                modalBody.innerHTML = `
+                    <h2>❌ Ошибка</h2>
+                    <p>Не удалось открыть кейс: ${error.message || 'Произошла неизвестная ошибка.'}</p>
+                    <button onclick="document.getElementById('resultModal').classList.add('hidden');">Закрыть</button>
+                `;
+                 showNotification(`Ошибка: ${error.message || 'Произошла ошибка.'}`, 'error');
+            }
+        }
+
+        // Функция для показа уведомлений
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            container.appendChild(notification);
+
+            // Автоматически скрываем уведомление через 5 секунд
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Инициализируем временное хранилище звёзд для симуляции
+        window.currentStarsForSim = isNaN(stars) ? 0 : stars;
+
     </script>
 </body>
 </html>

@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Открытие Кейсов</title>
-    <!-- Telegram Web App SDK -->
+    <title>Кейсы Play2Go</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --primary-bg: #1a2a6c;
+            --secondary-bg: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --accent-color: #f1c40f;
+            --border-color: #7f8c8d;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1c1f26; /* Темно-синий фон */
-            color: #ffffff; /* Белый текст */
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
@@ -18,21 +28,23 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #2d313a; /* Немного светлее фон для контента */
+            background-color: rgba(44, 62, 80, 0.8);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         }
         h1 {
-            color: #ffd700; /* Золотой цвет для заголовков */
+            color: var(--accent-color);
             text-align: center;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .info {
-             background-color: #3a3f4d; /* Цвет фона для информационных блоков */
-             padding: 15px;
-             border-radius: 10px;
-             margin-bottom: 20px;
+            background-color: rgba(52, 73, 94, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
         .info p {
             margin: 5px 0;
@@ -44,18 +56,29 @@
             margin-top: 20px;
         }
         .case-item {
-            background-color: #444957;
+            background: linear-gradient(135deg, var(--card-bg), #2c3e50);
             border-radius: 10px;
             padding: 15px;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            position: relative; /* Для размещения цены */
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-         .case-item:hover {
-             transform: scale(1.05);
-             background-color: #555a69;
-         }
+        .case-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #3d566e, #34495e);
+        }
+        .case-item.unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .case-item.unavailable:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
         .case-emoji {
             font-size: 2.5em;
             display: block;
@@ -65,69 +88,46 @@
             font-weight: bold;
             margin-bottom: 5px;
             font-size: 0.9em;
+            color: #bdc3c7;
         }
         .case-cost {
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: #ff6b6b; /* Красный для цены */
+            background-color: var(--error);
             color: white;
             padding: 3px 8px;
-            border-radius: 10px;
+            border-radius: 15px;
             font-size: 0.8em;
             font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .case-win {
             font-size: 0.8em;
-            color: #aaa;
+            color: #95a5a6;
         }
-        .hidden {
-            display: none;
-        }
-        button {
-            background-color: #4CAF50; /* Зеленая кнопка */
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 10px 2px;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+        .hidden { display: none; }
         #resultModal {
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.8); /* Полупрозрачный черный фон */
+            position: fixed; z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
             display: flex;
             justify-content: center;
             align-items: center;
         }
         .modal-content {
-            background-color: #2d313a;
+            background: linear-gradient(135deg, #2c3e50, #1a2a6c);
             margin: auto;
             padding: 30px;
-            border: 1px solid #888;
-            border-radius: 10px;
-            width: 80%;
+            border-radius: 15px;
+            width: 90%;
             max-width: 500px;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            position: relative;
         }
         .close {
             color: #aaa;
@@ -136,16 +136,13 @@
             font-weight: bold;
             cursor: pointer;
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: 15px;
+            right: 20px;
         }
-        .close:hover,
-        .close:focus {
-            color: #fff;
-        }
+        .close:hover { color: #fff; }
         #loadingSpinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
+            border: 5px solid #3498db;
+            border-top: 5px solid var(--accent-color);
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -161,11 +158,45 @@
             margin: 10px 0;
             border-radius: 5px;
             text-align: center;
+            font-weight: bold;
+            position: relative;
         }
-        .notification.success { background-color: #4CAF50; color: white; }
-        .notification.error { background-color: #f44336; color: white; }
-        .notification.info { background-color: #2196F3; color: white; }
-
+        .notification.success { background-color: var(--success); color: white; }
+        .notification.error { background-color: var(--error); color: white; }
+        .notification.info { background-color: #3498db; color: white; }
+        #notifications { position: fixed; top: 20px; right: 20px; z-index: 1001; width: 300px; }
+        button {
+            background: linear-gradient(to right, #27ae60, var(--success));
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: linear-gradient(to right, #219653, #27ae60);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: linear-gradient(to right, #95a5a6, #7f8c8d);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .balance-highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -173,117 +204,168 @@
         <h1>🔮 Кейсы Удачи</h1>
         <div id="userInfo" class="info">
             <p><strong>Пользователь:</strong> <span id="displayUsername">Загрузка...</span></p>
-            <p><strong>Звёзд:</strong> <span id="displayStars">Загрузка...</span> ⭐</p>
+            <p><strong>Звёзд:</strong> <span id="displayStars" class="balance-highlight">Загрузка...</span> ⭐</p>
             <p><small>ID: <span id="displayUserId">-</span></small></p>
         </div>
 
-        <div id="notifications"></div> <!-- Блок для уведомлений -->
+        <div id="notifications"></div>
 
         <div id="casesSection">
-            <h2>Выберите кейс:</h2>
+            <h2 style="text-align:center; color: #3498db;">Выберите кейс:</h2>
             <div id="caseGrid" class="case-grid">
-                <!-- Кейсы будут загружены сюда динамически -->
+                <!-- Кейсы будут загружены сюда -->
+                <p style="grid-column: 1 / -1; text-align: center;">Загрузка кейсов...</p>
             </div>
         </div>
+    </div>
 
-        <div id="resultModal" class="hidden">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                 <div id="modalBody">
-                     <div id="loadingSpinner"></div>
-                     <p>Открываем кейс...</p>
-                 </div>
+    <div id="resultModal" class="hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody">
+                <div id="loadingSpinner"></div>
+                <p>🔍 Анализируем содержимое кейса...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Инициализация Telegram Web App SDK
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Расширяем WebApp на весь доступный размер
-        tg.MainButton.hide(); // Скрываем основную кнопку Telegram по умолчанию
+        tg.expand();
+        tg.MainButton.hide();
 
-        // Получаем параметры из URL
+        // --- Получение данных из URL ---
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
-        const username = urlParams.get('username');
-        const stars = parseFloat(urlParams.get('stars'));
+        const userId = parseInt(urlParams.get('user_id'));
+        const usernameFromUrl = urlParams.get('username');
+        let starsFromUrl = parseFloat(urlParams.get('stars'));
 
-        // Отображаем информацию о пользователе
-        document.getElementById('displayUserId').textContent = userId || 'Неизвестно';
-        document.getElementById('displayUsername').textContent = username || 'Неизвестно';
-        document.getElementById('displayStars').textContent = isNaN(stars) ? '0.00' : stars.toFixed(2);
+        // Инициализация данных пользователя
+        let userData = {
+            user_id: userId,
+            username: usernameFromUrl || (userId ? `user_${userId}` : 'Гость'),
+            stars: isNaN(starsFromUrl) ? 0 : starsFromUrl
+        };
 
-        // Проверка наличия необходимых данных
-        if (!userId || !username) {
-             showNotification('Ошибка: Не удалось получить данные пользователя из Telegram.', 'error');
-             // Можно закрыть WebApp или показать сообщение об ошибке
-             // tg.close();
+        if (!userData.user_id) {
+            alert('Ошибка: Не удалось получить ID пользователя из URL.');
+            showNotification('Ошибка: Не удалось получить данные пользователя.', 'error');
+            // tg.close(); // Можно закрыть, если данные критичны
         } else {
-            console.log(`Пользователь: ${username}, ID: ${userId}, Звёзд: ${stars}`);
-            loadCases(); // Загружаем кейсы после получения данных
+            document.getElementById('displayUserId').textContent = userData.user_id;
+            document.getElementById('displayUsername').textContent = userData.username;
+            document.getElementById('displayStars').textContent = userData.stars.toFixed(2);
+            console.log(`Пользователь загружен из URL:`, userData);
+            loadUserInfo(); // Попробуем обновить с сервера
+            loadCases();    // Загрузим кейсы
         }
 
-        // Определение кейсов (можно загружать динамически с сервера)
-        const CASES = [
-            {
-                id: 1,
-                name: "Бронзовый Кейс",
-                emoji: "🥉",
-                cost: 10,
-                min_win: 1,
-                max_win: 30,
-                description: "Начальный кейс для новичков"
-            },
-            {
-                id: 2,
-                name: "Серебряный Кейс",
-                emoji: "🥈",
-                cost: 50,
-                min_win: 5,
-                max_win: 100,
-                description: "Средний кейс с хорошими шансами"
-            },
-            {
-                id: 3,
-                name: "Золотой Кейс",
-                emoji: "🥇",
-                cost: 100,
-                min_win: 10,
-                max_win: 300,
-                description: "Премиум кейс с большими выигрышами"
-            },
-            {
-                id: 4,
-                name: "Платиновый Кейс",
-                emoji: "💎",
-                cost: 500,
-                min_win: 50,
-                max_win: 1000,
-                description: "Элитный кейс для опытных игроков"
-            },
-            {
-                id: 5,
-                name: "Кейс Подарков",
-                emoji: "🎀",
-                cost: 35,
-                // Для кейса подарков выигрыш - ID подарка
-                description: "Специальный кейс с подарками"
+        // --- Функции для работы с API ---
+        // ВАЖНО: УКАЖИТЕ ПРАВИЛЬНЫЙ АДРЕС ВАШЕГО API
+        const API_BASE_URL = 'https://tgbot.play2go.cloud/api'; // <-- Замените на ваш домен API
+
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers,
+                }
+            };
+
+            try {
+                // Для GET запросов тело не нужно
+                if (finalOptions.method && finalOptions.method.toUpperCase() === 'GET') {
+                     delete finalOptions.body;
+                }
+
+                console.log(`[API CALL] ${url}`, finalOptions);
+                const response = await fetch(url, finalOptions);
+
+                if (!response.ok) {
+                    let errorMessage = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                    } catch (e) {
+                        // Игнорируем ошибку парсинга JSON, если тело не JSON
+                        errorMessage = await response.text() || errorMessage;
+                    }
+                    console.error(`[API ERROR] ${url}`, errorMessage);
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log(`[API SUCCESS] ${url}`, data);
+                return data;
+            } catch (error) {
+                console.error(`[API FAILED] ${url}`, error);
+                showNotification(`Ошибка API: ${error.message}`, 'error');
+                throw error; // Пробрасываем ошибку дальше
             }
-        ];
+        }
 
-        // Функция для загрузки и отображения кейсов
-        function loadCases() {
+
+        // --- Загрузка и отображение данных ---
+        async function loadUserInfo() {
+             try {
+                 const data = await apiCall(`/user/${userData.user_id}`);
+                 if (data.success) {
+                     userData.username = data.username || userData.username;
+                     userData.stars = data.stars;
+                     document.getElementById('displayUsername').textContent = userData.username;
+                     document.getElementById('displayStars').textContent = userData.stars.toFixed(2);
+                     console.log("Информация о пользователе обновлена с сервера:", data);
+                 } else {
+                     console.warn("Не удалось получить данные пользователя с сервера:", data.error);
+                     // Оставляем локальные данные
+                 }
+             } catch (error) {
+                  console.error("Ошибка при загрузке информации о пользователе:", error);
+                  // showNotification(`Ошибка загрузки данных: ${error.message}`, 'error');
+             }
+        }
+
+        async function loadCases() {
+            try {
+                const data = await apiCall('/cases');
+                if (data.success) {
+                    renderCases(data.cases);
+                } else {
+                    throw new Error(data.error || 'Неизвестная ошибка загрузки кейсов');
+                }
+            } catch (error) {
+                document.getElementById('caseGrid').innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--error);">Ошибка загрузки кейсов: ${error.message}</p>`;
+                showNotification(`Ошибка загрузки кейсов: ${error.message}`, 'error');
+            }
+        }
+
+        function renderCases(casesList) {
             const gridContainer = document.getElementById('caseGrid');
-            gridContainer.innerHTML = ''; // Очищаем перед перерисовкой
+            gridContainer.innerHTML = '';
 
-            CASES.forEach(caseItem => {
+            if (!casesList || casesList.length === 0) {
+                gridContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">Кейсы не найдены.</p>`;
+                return;
+            }
+
+            casesList.forEach(caseItem => {
                 const caseElement = document.createElement('div');
                 caseElement.className = 'case-item';
                 caseElement.dataset.caseId = caseItem.id;
 
-                // Определяем, может ли пользователь открыть этот кейс
-                const canAfford = stars >= caseItem.cost;
+                const canAfford = userData.stars >= caseItem.cost;
+                if (!canAfford) {
+                    caseElement.classList.add('unavailable');
+                    caseElement.title = `Недостаточно звёзд. Нужно ${caseItem.cost}`;
+                }
 
                 caseElement.innerHTML = `
                     <span class="case-cost">${caseItem.cost} ⭐</span>
@@ -292,26 +374,21 @@
                     ${
                         caseItem.id === 5 ?
                         '<div class="case-win">🎁 Случайный подарок</div>' :
-                        `<div class="case-win">💰 ${caseItem.min_win} - ${caseItem.max_win} звёзд</div>`
+                        `<div class="case-win">💰 Звёзды</div>`
                     }
                 `;
 
                 if (canAfford) {
                     caseElement.addEventListener('click', () => openCase(caseItem));
-                } else {
-                    caseElement.style.opacity = '0.5'; // Визуально затеняем недоступные
-                    caseElement.title = `Недостаточно звёзд. Нужно ${caseItem.cost}`;
                 }
 
                 gridContainer.appendChild(caseElement);
             });
         }
 
-        // Функция для открытия кейса
+        // --- Открытие кейса ---
         async function openCase(caseItem) {
             console.log(`Попытка открыть кейс: ${caseItem.name}`);
-
-            // Показываем модальное окно с анимацией
             const modal = document.getElementById('resultModal');
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
@@ -320,11 +397,9 @@
             `;
             modal.classList.remove('hidden');
 
-            // Закрываем модальное окно при клике на крестик
             document.querySelector('.close').onclick = function() {
                 modal.classList.add('hidden');
             }
-            // Закрываем модальное окно при клике вне его
             window.onclick = function(event) {
                 if (event.target == modal) {
                     modal.classList.add('hidden');
@@ -332,92 +407,60 @@
             }
 
             try {
-                // --- 1. Отправляем запрос в наш бэкенд для списания звёзд ---
-                // В реальной реализации здесь будет fetch к вашему API
-                // Например: const response = await fetch('/api/open_case', { ... });
+                const response = await apiCall('/open_case', {
+                    method: 'POST',
+                    body: JSON.stringify({ user_id: userData.user_id, case_id: caseItem.id })
+                });
 
-                // --- Имитация работы бэкенда ---
-                // В реальном приложении эта логика будет на сервере (Python/Flask/Django/etc.)
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Имитация задержки
+                if (response.success) {
+                     // Обновляем локальный баланс звёзд
+                     if (response.new_balance !== undefined) {
+                         userData.stars = response.new_balance;
+                         document.getElementById('displayStars').textContent = userData.stars.toFixed(2);
+                     }
 
-                // Проверка баланса (дублируем на клиенте для UX, но проверка на сервере обязательна)
-                if (window.currentStarsForSim < caseItem.cost) {
-                     throw new Error("Недостаточно звёзд (симуляция).");
-                }
-                window.currentStarsForSim -= caseItem.cost; // Списываем звёзды (симуляция)
+                     let resultHTML = `<h2>${response.message}</h2>`;
+                     if (response.result.type === 'stars') {
+                         resultHTML += `
+                             <p style="font-size: 3em; color: var(--accent-color);">⭐ ${response.result.amount}</p>
+                             <p>🎊 Вы выиграли звёзд!</p>
+                         `;
+                         showNotification(`Вы выиграли ${response.result.amount} звёзд!`, 'success');
+                     } else if (response.result.type === 'gift' && response.result.gift) {
+                         const gift = response.result.gift;
+                         resultHTML += `
+                             <p style="font-size: 3em;">${gift.emoji}</p>
+                             <p><strong>${gift.name}</strong></p>
+                             <p>(${gift.value} ⭐)</p>
+                             <p>🎁 Подарок добавлен в ваш инвентарь бота!</p>
+                         `;
+                         showNotification(`Вы выиграли ${gift.emoji} ${gift.name}!`, 'success');
+                     } else {
+                         resultHTML += `<p>❓ Неизвестный результат.</p>`;
+                     }
+                     resultHTML += `<button onclick="document.getElementById('resultModal').classList.add('hidden');">OK</button>`;
+                     modalBody.innerHTML = resultHTML;
 
-                // Рассчитываем выигрыш (симуляция)
-                let winResult;
-                if (caseItem.id === 5) {
-                    // Симуляция получения случайного подарка
-                    const gifts = [
-                        {id: 1, emoji: "🧸", name: "Мишка", value: 15},
-                        {id: 2, emoji: "💝", name: "Сердце", value: 15},
-                        {id: 3, emoji: "🎁", name: "Подарок", value: 25},
-                        {id: 4, emoji: "🌹", name: "Роза", value: 25},
-                        // ... другие подарки
-                    ];
-                    winResult = gifts[Math.floor(Math.random() * gifts.length)];
+                     // Перезагружаем список кейсов, чтобы обновить доступность
+                     loadCases();
+                     // И информацию о пользователе
+                     loadUserInfo();
+
                 } else {
-                    // Симуляция получения случайного количества звёзд
-                    const range = caseItem.max_win - caseItem.min_win;
-                    // Упрощённая логика: чаще маленькие выигрыши
-                    const rand = Math.random();
-                    let winAmount;
-                    if (rand < 0.6) {
-                        winAmount = caseItem.min_win + Math.random() * range * 0.3; // 60% - низкий выигрыш
-                    } else if (rand < 0.9) {
-                        winAmount = caseItem.min_win + range * 0.3 + Math.random() * range * 0.5; // 30% - средний
-                    } else {
-                        winAmount = caseItem.min_win + range * 0.8 + Math.random() * range * 0.2; // 10% - высокий
-                    }
-                    winResult = Math.max(caseItem.min_win, Math.floor(winAmount));
+                    throw new Error(response.error || 'Неизвестная ошибка открытия кейса');
                 }
-
-                // --- 2. Обновляем интерфейс с результатом ---
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки перед результатом
-
-                let resultHTML = `<h2>${caseItem.emoji} Кейс открыт!</h2>`;
-                if (caseItem.id === 5 && winResult.emoji) {
-                    resultHTML += `
-                        <p>🎊 Вы выиграли:</p>
-                        <p style="font-size: 3em;">${winResult.emoji}</p>
-                        <p><strong>${winResult.name}</strong> (${winResult.value} ⭐)</p>
-                        <p>🎁 Подарок добавлен в ваш инвентарь бота!</p>
-                    `;
-                     showNotification(`Вы выиграли ${winResult.emoji} ${winResult.name}!`, 'success');
-                } else if(typeof winResult === 'number') {
-                    resultHTML += `
-                        <p>🎊 Вы выиграли:</p>
-                        <p style="font-size: 2em;">⭐ ${winResult} звёзд</p>
-                    `;
-                    showNotification(`Вы выиграли ${winResult} звёзд!`, 'success');
-                    // Обновляем отображение звёзд
-                    window.currentStarsForSim += winResult;
-                    document.getElementById('displayStars').textContent = window.currentStarsForSim.toFixed(2);
-                } else {
-                     resultHTML += `<p>❓ Неизвестный результат.</p>`;
-                }
-                resultHTML += `<button onclick="document.getElementById('resultModal').classList.add('hidden');">OK</button>`;
-                modalBody.innerHTML = resultHTML;
-
-
-                // --- 3. Отправляем данные в бота (опционально, через Telegram Web App API) ---
-                // Например, можно отправить уведомление боту о выигрыше
-                // tg.sendData(JSON.stringify({action: "case_opened", case_id: caseItem.id, result: winResult}));
-
             } catch (error) {
                 console.error("Ошибка при открытии кейса:", error);
                 modalBody.innerHTML = `
-                    <h2>❌ Ошибка</h2>
-                    <p>Не удалось открыть кейс: ${error.message || 'Произошла неизвестная ошибка.'}</p>
+                    <h2 style="color: var(--error);">❌ Ошибка</h2>
+                    <p>${error.message || 'Произошла неизвестная ошибка.'}</p>
                     <button onclick="document.getElementById('resultModal').classList.add('hidden');">Закрыть</button>
                 `;
-                 showNotification(`Ошибка: ${error.message || 'Произошла ошибка.'}`, 'error');
+                showNotification(`Ошибка: ${error.message || 'Произошла ошибка.'}`, 'error');
             }
         }
 
-        // Функция для показа уведомлений
+        // --- Уведомления ---
         function showNotification(message, type = 'info') {
             const container = document.getElementById('notifications');
             const notification = document.createElement('div');
@@ -426,14 +469,12 @@
 
             container.appendChild(notification);
 
-            // Автоматически скрываем уведомление через 5 секунд
             setTimeout(() => {
-                notification.remove();
+                if (notification.parentNode === container) {
+                    notification.remove();
+                }
             }, 5000);
         }
-
-        // Инициализируем временное хранилище звёзд для симуляции
-        window.currentStarsForSim = isNaN(stars) ? 0 : stars;
 
     </script>
 </body>
